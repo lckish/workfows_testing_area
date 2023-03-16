@@ -23,9 +23,7 @@ jobs:
       with:
         name: package
     - name: Publish nuget package
-      run: |
-        $package = Get-ChildItem package\Release\*.nupkg | Sort-Object LastWriteTime
-        dotnet nuget push $package.fullname --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }} --source https://nuget.pkg.github.com/lckish/index.json --skip-duplicate
+      run: dotnet nuget push package.fullname --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }} --source https://nuget.pkg.github.com/lckish/index.json --skip-duplicate
 
   release-nuget:
     runs-on: windows-latest
@@ -46,6 +44,6 @@ jobs:
     - name: Release nuget package
       uses: ncipollo/release-action@v1
       with:
-        artifacts: 'package\Release\*.nupkg'
+        artifacts: 'package'
         tag: v${{ steps.getVersion.outputs.info }}
-        token: ${{ secrets.ACTION_TOKEN }}
+        token: ${{ secrets.PUBLISH_NUGET_TOKEN }}
