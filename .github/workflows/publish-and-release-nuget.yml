@@ -12,7 +12,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: package
-        path: package/Release/
+        path: PowerCollections\PowerCollections\bin\Release\*.nupkg
 
   publish-nuget:
     runs-on: windows-latest
