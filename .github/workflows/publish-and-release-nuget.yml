@@ -1,0 +1,40 @@
+name: publish-and-release-nuget
+on: workflow_dispatch
+jobs:
+  build-nuget:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Build nuget package
+      run: dotnet pack PowerCollections/PowerCollections/PowerCollections.csproj -c Release
+    artifacts:
+      paths:
+        - package/Release
+  publish-nuget:
+    runs-on: windows-latest
+    needs: build-nuget
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Publish nuget package
+      run: |
+        $package = Get-ChildItem package/Release\*.nupkg | Sort-Object LastWriteTime
+        dotnet nuget push $package.fullname --api-key ${{ secrets.PUBLISH_NUGET_TOKEN }} --source https://nuget.pkg.github.com/lckish/index.json --skip-duplicate
+  release-nuget:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Get version
+      id: getVersion
+      uses: mavrosxristoforos/get-xml-info@1.0
+      with:
+        xml-file: 'PowerCollections/PowerCollections/PowerCollections.csproj'
+        xPath: '//VersionPrefix'
+    - name: Release nuget package
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: 'package/Release\*.nupkg'
+        tag: v${{ steps.getVersion.outputs.info }}
+        token: ${{ secrets.ACTION_TOKEN }}
